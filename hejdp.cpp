@@ -3,7 +3,7 @@ using namespace std;
 
 int main(){
     string svar;
-    cout << "hej! what is your response?: " << endl;
+    cout << "fuck you! what is your response?: " << endl;
     cin >> svar;
 
     for(int x = 100; x > 0; x--){
