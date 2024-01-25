@@ -1,0 +1,109 @@
+import json
+import random
+import asyncio
+import logging
+
+# Setting up basic logging
+logging.basicConfig(filename='error_log.txt', level=logging.ERROR, format='%(asctime)s:%(levelname)s:%(message)s')
+
+class PatientDataError(Exception):
+    pass
+
+class UserAuthentication:
+    def __init__(self):  # Corrected here
+        self.users = {"doctor": "password123", "admin": "adminpass"}
+
+    async def authenticate_user(self):
+        username = input("Username: ")
+        password = input("Password: ")
+        await asyncio.sleep(1)  # Simulating database verification delay
+        if username in self.users and self.users[username] == password:
+            print(f"Access granted, {username}.")
+            return True
+        else:
+            print("Access denied. Invalid credentials.")
+            return False
+
+class PatientDatabase:
+    def __init__(self):  # Corrected here
+        self.patient_data = {}
+        self.load_data()
+
+    def load_data(self):
+        try:
+            with open('patient_data.json', 'r') as file:
+                self.patient_data = json.load(file)
+        except FileNotFoundError:
+            self.patient_data = {}
+
+    def save_data(self):
+        with open('patient_data.json', 'w') as file:
+            json.dump(self.patient_data, file, indent=4)
+
+    def get_average_age(self):
+        if not self.patient_data:
+            return None
+        total_age = sum(patient['age'] for patient in self.patient_data.values())
+        return total_age / len(self.patient_data)
+
+class PatientInterview:
+    def __init__(self, db):  # Corrected here
+        self.db = db
+
+    def get_input(self, prompt, valid_responses=None, is_numeric=False):
+        while True:
+            try:
+                response = input(prompt).strip()
+                if is_numeric:
+                    response = int(response)
+                if valid_responses is None or response in valid_responses:
+                    return response
+                raise PatientDataError("Invalid response.")
+            except ValueError:
+                print("A number, please.")
+            except PatientDataError as e:
+                print(e)
+                logging.error(f"PatientDataError: {e}")
+
+    async def conduct_interview(self):
+        print("Welcome to the future of medical interviews.")
+
+        name = self.get_input("Patient name?: ")
+        age = self.get_input(f"Patient's age, {name}? For the record: ", is_numeric=True)
+        patient_status = self.get_input("First-time or returning patient?: ", ["new", "returning"])
+
+        if name in self.db.patient_data:
+            visits = self.db.patient_data[name].get('visits', 0) + 1
+            print(f"Ah, {name}. You're back. This is visit number {visits}.")
+            self.db.patient_data[name]['visits'] = visits
+        else:
+            self.db.patient_data[name] = {"age": age, "status": patient_status, "visits": 1}
+
+        self.db.save_data()
+
+        mood = self.get_input("How are you feeling today, briefly?: ")
+        average_age = self.db.get_average_age()
+
+        await self.summarize(name, age, patient_status, mood, average_age)
+
+    async def summarize(self, name, age, patient_status, mood, average_age):
+        mood_responses = ["Intriguing.", "Noted.", "Ah, the human condition."]
+        avg_age_response = f"Average patient age: {average_age:.1f} years." if average_age else "You're our first respondent."
+
+        print(f"\n{name}, age {age}, is a {'new' if patient_status == 'new' else 'returning'} patient, feeling '{mood}'. {random.choice(mood_responses)}")
+        print(avg_age_response)
+
+        confirmation = self.get_input("Is this information correct?: ", ["yes", "no"])
+        print("\nGreat. Or not. Either way, it's documented.")
+
+        print("\nEnd of the interview. Have a... day.")
+
+# Main function to run the application
+async def main():
+    auth = UserAuthentication()
+    if await auth.authenticate_user():
+        db = PatientDatabase()
+        interview = PatientInterview(db)
+        await interview.conduct_interview()  # Corrected here
+
+asyncio.run(main())
