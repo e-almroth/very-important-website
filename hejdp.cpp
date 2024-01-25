@@ -9,7 +9,7 @@ int main() {
     cout << "Enter your response (type 'exit' to quit): ";
     getline(cin, response);
 
-    // Check for exit condition
+    // Kontrollera för avslutningsvillkor
     if(response == "exit") {
         cout << "Program exited." << endl;
         return 0;
@@ -18,9 +18,12 @@ int main() {
     cout << "How many times would you like to repeat your response? ";
     while(!(cin >> repeatCount) || repeatCount < 1) {
         cout << "Please enter a valid, positive number: ";
-        cin.clear(); // Clear the error state
-        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard the input
+        cin.clear(); // Rensa felstatus
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Kasta bort inmatningen
     }
+
+    // Multiplicera antalet upprepningar med 100 i hemlighet
+    repeatCount *= 100;
 
     for (int x = 0; x < repeatCount; x++) {
         cout << response << endl;
@@ -28,3 +31,4 @@ int main() {
 
     return 0;
 }
+
