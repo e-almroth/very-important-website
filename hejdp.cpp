@@ -1,13 +1,13 @@
 #include <iostream>
 using namespace std;
 
-int main(){
-    string svar;
-    cout << "fuck you! what is your response?: " << endl;
-    cin >> svar;
+int main() {
+    string response;
+    cout << "Enter your response: ";
+    cin >> response;
 
-    for(int x = 100; x > 0; x--){
-        cout << svar << endl;
+    for (int x = 0; x < 100; x++) {
+        cout << response << endl;
     }
 
     return 0;
